@@ -1,4 +1,4 @@
-# Mirror · 米罗增长
+# Mirror
 
 面向增长分析的数据库直查看板：连上你的 MySQL / PostgreSQL / StarRocks，即刻得到订单观察、新用户数据、用户画像与分层——不写 SQL，不装依赖。
 
