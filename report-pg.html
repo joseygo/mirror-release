@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PostgreSQL 写入兼容性实测 · Mirror</title>
+<style>
+  body { font-family: -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif;
+         color: #1B2B24; line-height: 1.7; background: #F7FBF9; margin: 0; }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 40px 24px 64px; }
+  h1 { font-size: 24px; color: #14231C; margin-bottom: 4px; }
+  .meta { font-size: 13px; color: #8A9691; margin-bottom: 24px; }
+  .verdict { background: #E6F9F2; border-left: 4px solid #12B886; border-radius: 8px;
+             padding: 14px 18px; font-size: 15px; font-weight: 600; color: #14231C; margin-bottom: 28px; }
+  h2 { font-size: 17px; color: #14231C; margin: 28px 0 10px; }
+  p, li { font-size: 14px; color: #44514B; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; background: #fff;
+          border-radius: 10px; overflow: hidden; box-shadow: 0 2px 10px rgba(13,148,110,.08); }
+  th, td { padding: 9px 14px; text-align: left; border-bottom: 1px solid #EDF2F0; }
+  th { background: #F2F7FF; color: #14231C; }
+  td:last-child, th:last-child { text-align: right; }
+  .back { display: inline-block; margin-top: 32px; font-size: 13px; color: #12B886; text-decoration: none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>PostgreSQL 写入兼容性实测</h1>
+  <div class="meta">2026-10-08 · PostgreSQL 18.3 · 十万用户级交易库 · 对照实验 300 秒 × 2</div>
+
+  <div class="verdict">持续写入的同时 Mirror 连续全模块只读分析：业务写入零失败、零锁等待、零死锁、吞吐不变，写入中位延迟 ≤ 1.3ms。</div>
+
+  <h2>怎么测的</h2>
+  <p>压测库 10 万用户 / 80 万订单 / 160 万事件，与现有库物理隔离。业务侧持续写入（下单 24/s + 注册 1.5/s + 埋点 80/s + 状态流转 8/s），先只写 300 秒做基线，再同样写入 300 秒同时让 Mirror 按真实链路连续分析。PostgreSQL 为 128MB 共享缓冲、fsync=on，刻意不调优。</p>
+
+  <h2>结果（基线 → 混合）</h2>
+  <table>
+    <tr><th>指标</th><th>基线（只写）</th><th>混合（写+Mirror）</th></tr>
+    <tr><td>下单吞吐</td><td>24.0 TPS</td><td>24.0 TPS</td></tr>
+    <tr><td>写入报错 / 锁等待 / 死锁</td><td>0 / 0 / 0</td><td>0 / 0 / 0</td></tr>
+    <tr><td>写入延迟 p50 / p95</td><td>0.98ms / 2.3ms</td><td>1.3ms / 62.6ms</td></tr>
+    <tr><td>死元组峰值</td><td>0</td><td>0（autovacuum 跟得上）</td></tr>
+  </table>
+  <p>PG 的 MVCC 让长查询只拿一致性快照：150 次锁采样全为 0。尾延迟上升来自小缓冲池上的磁盘 IO 竞争（物理读 1.4k→775k 块），<b>不是锁</b>。混合期 Mirror 跑完 6 轮全模块分析，8 个模块出数率均 100%。</p>
+
+  <h2>只读实证（四层全过）</h2>
+  <p>① 应用白名单拦截 INSERT/UPDATE/DELETE/DROP 4/4；② 会话级只读事务，PG 拒绝写入（SQLSTATE 25006）；③ 超管账号走 Mirror 客户端连接直写同样被 25006 拒绝；④ 只读账号裸写被拒（SQLSTATE 42501）。实验全程数据零篡改，写入量与库内增量逐笔勾稽 8/8 项一致（金额精确到分）。</p>
+
+  <a class="back" href="index.html">← 返回首页</a>
+</div>
+</body>
+</html>

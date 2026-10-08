@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mirror - 小中项目第一选择</title>
+<meta name="description" content="Mirror：直连 PostgreSQL / MySQL / StarRocks，3秒出骨架，15秒出日图，数据不出本机，只读无篡改。">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='40' fill='%2312B886'/></svg>">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif;
+    color: #1B2B24; line-height: 1.7;
+    background: linear-gradient(160deg, #EAFBF3 0%, #F2F7FF 55%, #FDFBF0 100%);
+  }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 0 24px; }
+
+  /* 首屏 */
+  .hero { text-align: center; padding: 72px 0 56px; }
+  .hero .tag { display: inline-block; background: #12B886; color: #fff; font-size: 13px;
+               padding: 4px 14px; border-radius: 99px; margin-bottom: 20px; letter-spacing: 1px; }
+  .hero h1 { font-size: 42px; font-weight: 800; color: #14231C; margin-bottom: 16px; letter-spacing: 1px; }
+  .hero h1 span { color: #12B886; }
+  .hero p { font-size: 17px; color: #5F6C66; max-width: 640px; margin: 0 auto 32px; }
+  .btn { display: inline-block; background: #12B886; color: #fff; text-decoration: none;
+         font-size: 16px; font-weight: 600; padding: 14px 36px; border-radius: 12px;
+         box-shadow: 0 8px 24px rgba(18,184,134,.25); transition: transform .15s, box-shadow .15s; }
+  .btn:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(18,184,134,.35); }
+  .hero .sub { margin-top: 14px; font-size: 13px; color: #8A9691; }
+
+  /* 通用段落 */
+  section { padding: 56px 0; }
+  .sec-title { text-align: center; font-size: 28px; font-weight: 700; color: #14231C; margin-bottom: 12px; }
+  .sec-sub { text-align: center; font-size: 15px; color: #5F6C66; margin-bottom: 40px; }
+
+  /* 六宫格卖点 */
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .card { background: #fff; border-radius: 16px; padding: 24px 22px;
+          box-shadow: 0 4px 16px rgba(13,148,110,.08); }
+  .card .icon { width: 40px; height: 40px; border-radius: 10px; background: #E6F9F2;
+                display: flex; align-items: center; justify-content: center;
+                font-size: 20px; margin-bottom: 14px; }
+  .card h3 { font-size: 16px; font-weight: 700; color: #14231C; margin-bottom: 6px; }
+  .card p { font-size: 13px; color: #5F6C66; line-height: 1.6; }
+
+  /* 截图区 */
+  .shots { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .shot { background: #fff; border-radius: 16px; overflow: hidden;
+          box-shadow: 0 4px 16px rgba(13,148,110,.08); }
+  .shot .ph { aspect-ratio: 16/10; background: linear-gradient(135deg, #EAFBF3, #F2F7FF);
+              display: flex; flex-direction: column; align-items: center; justify-content: center;
+              color: #8A9691; font-size: 13px; border-bottom: 1px solid #EDF2F0; }
+  .shot .ph b { font-size: 15px; color: #5F6C66; margin-bottom: 6px; }
+  .shot .cap { padding: 14px 16px; font-size: 13px; color: #5F6C66; }
+
+  /* 三步上手 */
+  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; counter-reset: step; }
+  .step { background: #fff; border-radius: 16px; padding: 24px 22px;
+          box-shadow: 0 4px 16px rgba(13,148,110,.08); position: relative; }
+  .step::before { counter-increment: step; content: counter(step);
+                  position: absolute; top: -14px; left: 20px; width: 32px; height: 32px;
+                  background: #12B886; color: #fff; font-weight: 700; font-size: 15px;
+                  border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+  .step h3 { font-size: 15px; font-weight: 700; color: #14231C; margin: 8px 0 6px; }
+  .step p { font-size: 13px; color: #5F6C66; }
+  .note { margin-top: 20px; background: #FFF9E6; border: 1px solid #F5E6B8; border-radius: 12px;
+          padding: 14px 18px; font-size: 13px; color: #7A6A2F; }
+
+  /* 技术边界 */
+  details { background: #fff; border-radius: 16px; box-shadow: 0 4px 16px rgba(13,148,110,.08); }
+  details summary { padding: 18px 24px; font-size: 15px; font-weight: 600; color: #14231C;
+                    cursor: pointer; list-style: none; }
+  details summary::after { content: "+"; float: right; color: #12B886; font-size: 20px; }
+  details[open] summary::after { content: "−"; }
+  details .body { padding: 0 24px 20px; font-size: 14px; color: #5F6C66; }
+  details .body p { margin-bottom: 8px; }
+  details .body b { color: #14231C; }
+
+  /* 收尾 */
+  .cta { text-align: center; padding: 64px 0 48px; }
+  .cta h2 { font-size: 26px; font-weight: 700; color: #14231C; margin-bottom: 12px; }
+  .cta p { font-size: 15px; color: #5F6C66; margin-bottom: 28px; }
+  .cta .mit { margin-top: 14px; font-size: 13px; color: #8A9691; }
+
+  footer { text-align: center; padding: 24px 0 40px; font-size: 13px; color: #8A9691; }
+  footer a { color: #12B886; text-decoration: none; }
+
+  @media (max-width: 768px) {
+    .grid, .shots, .steps { grid-template-columns: 1fr; }
+    .hero h1 { font-size: 30px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===================== 首屏 ===================== -->
+<header class="hero wrap">
+  <!-- <div class="tag">直查业务库的增长分析工具</div> -->
+  <h1>Mirror</h1>
+  <p>支持 PostgreSQL / MySQL / StarRocks，数据不出本机，本地只读。</p>
+  <a class="btn" href="https://github.com/joseygo/mirror-release/releases/latest">前往 GitHub 免费下载 →</a>
+  <div class="sub">mirror.exe · 17MB 单文件 · 双击即用 · 开源协议 MIT</div>
+</header>
+
+<!-- ===================== 六条卖点 ===================== -->
+<section class="wrap">
+  <h2 class="sec-title">为什么是 Mirror</h2>
+  <!-- <p class="sec-sub">低门槛数据增长挖掘，小中项目第一选择</p> -->
+  <div class="grid">
+    <div class="card">
+      <div class="icon">&#x1F381;</div>
+      <h3>免费使用</h3>
+      <p>已由 GitHub 托管，无需注册无需付费。</p>
+    </div>
+    <div class="card">
+      <div class="icon">&#x1F4CA;</div>
+      <h3>内置增长挖掘模板</h3>
+      <p>数据秒出不用想，助力数据飞轮。</p>
+    </div>
+    <div class="card">
+      <div class="icon">&#x26A1;</div>
+      <h3>实时数据</h3>
+      <p>最新数据马上看。</p>
+    </div>
+    <div class="card">
+      <div class="icon">&#x1F680;</div>
+      <h3>免配置</h3>
+      <p>双击即用0门槛。</p>
+    </div>
+    <div class="card">
+      <div class="icon">&#x1F9F9;</div>
+      <h3>口径归一</h3>
+      <p>口径归一，自动清洗映射。</p>
+    </div>
+    <div class="card">
+      <div class="icon">&#x1F512;</div>
+      <h3>单机使用</h3>
+      <p>数据不出本机，只读查询。</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== 功能截图 ===================== -->
+<!-- <section class="wrap">
+  <h2 class="sec-title">长什么样</h2>
+  <p class="sec-sub">基准日 2026-09-29 标准测试数据实拍</p>
+  <div class="shots">
+    <div class="shot">
+      <div class="ph"><b>截图占位</b>概览页 · 订单观察及新用户数据</div>
+      <div class="cap">钱卡、人卡、近 30 天日趋势，3 秒出骨架，15 秒出日图。</div>
+    </div>
+    <div class="shot">
+      <div class="ph"><b>截图占位</b>画像页 · 用户画像与分层</div>
+      <div class="cap">地域人群结构、消费漏斗、留存，一次看全。</div>
+    </div>
+    <div class="shot">
+      <div class="ph"><b>截图占位</b>渠道页 · 渠道来源归一</div>
+      <div class="cap">渠道明细折叠展示，N 个原始取值归一为 M 个标准渠道。</div>
+    </div>
+  </div>
+</section> -->
+
+<!-- ===================== 三步上手 ===================== -->
+<section class="wrap">
+  <h2 class="sec-title">三步上手</h2>
+  <!-- <p class="sec-sub">从下载到出看板，不超过 1 分钟</p> -->
+  <div class="steps">
+    <div class="step">
+      <h3>下载 mirror.exe</h3>
+      <p>17MB 单文件，无需安装，放桌面就行。</p>
+    </div>
+    <div class="step">
+      <h3>双击运行</h3>
+      <p>浏览器自动打开连接门（http://127.0.0.1:8765）。</p>
+    </div>
+    <div class="step">
+      <h3>填地址，点连接</h3>
+      <p>3 秒出骨架，10 秒出日图，全量图表后台补齐。</p>
+    </div>
+  </div>
+  <div class="note">
+    <!-- <b>提示：</b>Windows 可能弹出 SmartScreen 未签名警告，点「更多信息」→「仍要运行」即可。 -->
+  </div>
+</section>
+
+<!-- ===================== 技术边界 ===================== -->
+<section class="wrap">
+  <h2 class="sec-title">技术边界</h2>
+  <!-- <p class="sec-sub">说清楚能做什么、不能做什么</p> -->
+  <details>
+    <summary>数据库支持与建议量级</summary>
+    <div class="body">
+      <p><b>PostgreSQL</b> · 建议百万用户级项目（12+ 版本）</p>
+      <p><b>MySQL</b> · 建议十万用户级项目</p>
+      <p><b>StartRock</b> · 建议百万用户级项目</p>
+      <p>连接全程只读，会话级只读模式。</p>
+    </div>
+  </details>
+  <details style="margin-top:16px" id="perf">
+    <summary>只读会不会影响业务写入？实测验证</summary>
+    <div class="body">
+      <p>2026-10-08 对照实验：业务库持续写入（下单 24/s 等 110 条/s）的同时，Mirror 连续全模块分析 300 秒——<b>写入零失败、零锁等待、吞吐不变</b>。</p>
+      <p><b><a href="report-pg.html" style="color:#12B886">PostgreSQL 实测 →</a></b> 中位写入延迟 ≤1.3ms，零死锁，只读四层实证全过</p>
+      <p><b><a href="report-mysql.html" style="color:#12B886">MySQL 实测 →</a></b> 中位写入延迟 &lt;5ms，MVCC 无版本堆积，只读三层实证全过</p>
+    </div>
+  </details>
+</section>
+
+<!-- ===================== 收尾下载 ===================== -->
+<section class="cta wrap">
+  <h2>现在就把你的业务库变成策略库</h2>
+  <p>免费、单机、只读，下载即用。</p>
+  <a class="btn" href="https://github.com/joseygo/mirror-release/releases/latest">前往 GitHub 免费下载 →</a>
+  <div class="mit">开源协议 MIT · 下载链接永久指向最新版本</div>
+</section>
+
+<footer>
+  <div>©Josey和AI朋友们 · <a href="mailto:joseygogogo@gmail.com">joseygogogo@gmail.com</a></div>
+</footer>
+
+</body>
+</html>
